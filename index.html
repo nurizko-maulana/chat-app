@@ -58,7 +58,7 @@
               </div>
             </div>
             <div class="card-body msg_card_body">
-              <div class="d-flex justify-content-start mb-4">
+              <!-- <div class="d-flex justify-content-start mb-4">
                 <div class="img_cont_msg">
                   <img src="img/IMG_0062.JPG"" class="rounded-circle
                   user_img_msg">
@@ -133,7 +133,7 @@
                   Bye, see you
                   <span class="msg_time">9:12 AM, Today</span>
                 </div>
-              </div>
+              </div> -->
             </div>
             <div class="card-footer">
               <div class="input-group">
@@ -167,35 +167,45 @@
           var message = $(".type_msg").val();
           $(".type_msg").val("");
           console.log(message);
+          var settings = {
+            url: "http://localhost:3002/message",
+            method: "POST",
+            timeout: 0,
+            headers: {
+              "Content-Type": "application/json",
+            },
+            data: JSON.stringify({
+              text: message,
+              user: 2,
+            }),
+          };
 
-          $(".msg_card_body").append(function () {
-              // alert(`print message ${message} `);
+          $.ajax(settings).done(function (response) {
+            response = response[0];
+            console.log(response);
+            console.log(response.text);
+            console.log(response.created_at);
+            $(".msg_card_body").append(function () {
+            // alert(`print message ${message} `);
 
-              var template = `<div class="d-flex justify-content-end mb-4">
-                  <div class="msg_cotainer_send">
-                    ${message}
-                    <span class="msg_time_send">${getTime()}</span>
-                  </div>
-                  <div class="img_cont_msg">
-                    <img
-                      src="img/IMG_0023.JPG"
-                      class="rounded-circle user_img_msg"
-                    />
-                  </div>
-                </div>`;
+            var template = `<div class="d-flex justify-content-end mb-4">
+                <div class="msg_cotainer_send">
+                  ${response.text}
+                  <span class="msg_time_send">${response.created_at.replace('T',' ').replace('.000Z','')}</span>
+                </div>
+                <div class="img_cont_msg">
+                  <img
+                    src="img/IMG_0023.JPG"
+                    class="rounded-circle user_img_msg"
+                  />
+                </div>
+              </div>`;
 
-              $(this).append(template);
-            });
+            $(this).append(template);
+          });
+          });
           
         });
-
-        function getTime(){
-          var today = new Date();
-          var time = today.getHours() + ":" + today.getMinutes() + ", Today"
-          return time;
-        }
-
-
         $(".attach_btn").click(function () {});
 
         var settings = {
@@ -211,7 +221,46 @@
           }),
         };
 
-        
+        $.ajax(settings).done(function (response) {
+          $(".user_info").append(`<p>${response.length} Messages</p>`)
+          // console.log(response.length)
+          for (var i in response) {
+            time = response[i].created_at.replace('T',' ').replace('.000Z','');
+            if (response[i].user == 2) {
+              console.log(response[i].text);
+
+              $(".msg_card_body").append(function () {
+                var templateUser2 = `<div class="d-flex justify-content-end mb-4">
+                    <div class="msg_cotainer_send">
+                      ${response[i].text}
+                      <span class="msg_time_send">${time}</span>
+                    </div>
+                    <div class="img_cont_msg">
+                      <img
+                        src="img/IMG_0023.JPG"
+                        class="rounded-circle user_img_msg"
+                      />
+                    </div>
+                  </div>`;
+                $(this).append(templateUser2);
+              });
+            } else if (response[i].user == 1) {
+              $(".msg_card_body").append(function () {
+                var templateUser1 = `
+              <div class="d-flex justify-content-start mb-4">
+                <div class="img_cont_msg">
+                  <img src="img/IMG_0062.JPG"" class="rounded-circle
+                  user_img_msg">
+                </div>
+                <div class="msg_cotainer">
+                  ${response[i].text}
+                  <span class="msg_time">${time}</span>
+                </div>`;
+                $(this).append(templateUser1);
+              });
+            }
+          }
+        });
       });
     </script>
   </body>
